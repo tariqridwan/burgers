@@ -123,7 +123,7 @@ implicit none
             Ri_3(k) = -up_iq_uq - k**2.0/Re*ui_3(k)
 
             ! ut(k) = uk(k) + dt*(-up_iq_uq-k**2.0/Re*uk(k))
-            ut(k) = uk(k) + dt/6.0*( Ri_0(k) + 2.0*Ri_1(k) + 2.0*Ri_2(k) + Ri_3(k) ) ! RK2
+            ut(k) = uk(k) + dt/6.0*( Ri_0(k) + 2.0*Ri_1(k) + 2.0*Ri_2(k) + Ri_3(k) ) ! RK4
             err(t) = err(t) + (ut(k)-uk(k))**2.0
             uk(k) = ut(k)
         end do
