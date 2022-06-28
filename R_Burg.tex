@@ -1,0 +1,301 @@
+%%%---Setting font size and format:
+\documentclass[a4paper]{article}
+\usepackage{geometry} %% Flex­i­ble and com­plete in­ter­face to doc­u­ment di­men­sions
+\geometry{
+	a4paper,
+	total={6.27in,9.69in},
+	left=1in,
+	top=1in,
+}
+\usepackage[colorlinks=true,linkcolor=blue,anchorcolor=blue,urlcolor=blue,citecolor=blue]{hyperref} %% must be placed before 'placeins'** and 'apacite': bit.ly/2CZ2NEo
+\usepackage[section]{placeins} %% en­sure all floats for a sec­tion ap­pear be­fore the next sec­tion com­mand: goo.gl/YdkkPd
+%%%---Setting line spacing: \linespread or 'setspace' package:
+\usepackage{setspace} %use anywhere: \singlespacing, \doublespacing, \onehalfspacing; Latex default is Single Spacing: bit.ly/2FjE3cm
+
+%\setlength{\headheight}{ 27.8pt}
+\usepackage{color} %% To use color: bit.ly/2LXSVxC
+\definecolor{mygreen}{RGB}{0, 153, 76}
+\usepackage{subfigure} %% : bit.ly/2AAacIQ
+%\usepackage{graphicx} %% : bit.ly/2FgnUo0
+\usepackage{graphicx,psfrag} %% If eps figure is there
+\usepackage{caption} %% for caption: https://bit.ly/2RjFWw8
+%\usepackage[skip=2pt,font=scriptsize]{caption} %%% use 'scriptsize', 'footnotesize', 'small', 'normalsize', 'large' or 'Large'
+%\usepackage[justification=centering]{caption} %%% for center justification in caption
+\usepackage{mathtools} %% Math package: goo.gl/vsmBvG
+%\usepackage{amsmath} %% goo.gl/aXpxuR, no need due to 'mathtools'
+\usepackage{amsfonts} %% introduces special mathemtical characters
+%\usepackage{latexsym} %% 11 math symbols goo.gl/aW5JEC, no need due to amsfonts
+\usepackage{amssymb} %% provides extended symbol collection & internally loads 'amsfonts'
+\usepackage[export]{adjustbox} %% goo.gl/g6Vwvi
+%\usepackage{esint} %% per­mits ac­cess to al­ter­nate in­te­gral sym­bols: ctan.org/pkg/esint
+\usepackage{float}
+%\usepackage{matlab-prettifier}
+\usepackage{url} %% bit.ly/2Qy3Yy6, check 'hyperref' details
+\usepackage{textcomp} %% Text Com­pan­ion fonts: goo.gl/GKs5k
+\usepackage{array} %% for column bit.ly/2sfAAmB
+\usepackage{booktabs} %% To publish quality tables: bit.ly/2CXquNs
+\usepackage{multirow} %% to merge multiple row in a table: bit.ly/2SFsvmB
+
+%%%---Definitions:
+%\def\karm{von K\'arm\'an }
+%%%---Format page number/heading etc:
+%\pagestyle{myheadings}
+%\renewcommand{\subsectionmark}[1]{\markright{\thesubsection. #1}}
+%\renewcommand{\sectionmark}[1]{\markright{\thesection. #1}}
+
+
+\begin{document}
+	
+\title{\textbf{Burgers equation in Fourier space}}
+\author{Tariq Ridwan (tariq.ridwan@bsc.es)\\\\
+	Barcelona Supercomputing Center\\
+	Barcelona, Spain
+}
+\maketitle
+\tableofcontents
+
+\newpage
+\listoffigures
+\listoftables	
+\newpage
+
+\section{Problem statement}
+The Burger's equation (Eq. \ref{Eq:Burgers}) to be solved using the Fourier space and two different grid resolutions.
+\begin{equation}
+	{\partial_t}u + u{\partial_x} u = \frac{1}{Re}{\partial_{xx}}u + f
+	\label{Eq:Burgers}
+\end{equation}
+The coarse grid consists of 20 total Fourier modes ($ N=20 $) and the fine grid has $ N=100 $. One normal case and two LES cases are used in the coarse mesh, while a DNS case is applied in the fine mesh. The initial conditions are provided.
+% %
+\section{Burger's equation in Fourier space}
+The Burger's equation in Fourier space can be written as:
+\begin{equation}
+	{\partial_t} \hat{u}_k + \sum_{k=p+q} \hat{u}_p iq \hat{u}_q = -\frac{k^2}{Re} \hat{u}_k + F_k
+	\label{Eq:Burgers_Fourier}
+\end{equation}
+where $ k $ is the Fourier mode ranging from 0 to $ N $, and $ \hat{u}_k $ is the $ k $-th Fourier coefficient and a complex number.
+
+\subsection{Initial conditions}
+The initial conditions are $ \hat{u}_k=k^{-1}, {\partial_t} \hat{u}_1 = 0 $ for $ t>0 $, and $ F_k=0 $ for $ k>1 $.
+% %
+\section{Methodology and formulation}
+\subsection{The $ u $-wave}
+The term $ u $ can be obtained using the $ k $-th Fourier coefficient $ \hat{u}_k $:
+\begin{equation}
+	u(x,t) =  \sum_{k=-N}^{k=N} \hat{u}_k e^{ikx}
+	\label{Eq:u}
+\end{equation}
+It is important to note that since $ u(x,t) $ is a real number, the negative Fourier mode $ -k $ can be expressed as the complex conjugate of the positive Fourier mode $ k $:
+\begin{equation}
+	\hat{u}_{-k} = \overline{\hat{u}_k}
+	\label{Eq:u_comp}
+\end{equation}
+%
+\subsubsection{Modification for LES}
+For LES, a minor modification is required and that is implementing an eddy-viscosity $\nu_t$ along with the turbulent viscosity $\nu = 1/Re$ in Eq. \ref{Eq:Burgers_Fourier}. The $\nu_t (k)$ is calculated as:
+
+\begin{equation}
+	\nu_t(k/k_N) = \nu_t^{+\infty} \nu_t^*(k/k_N) \sqrt{\bigg(\frac{E_{k_N}}{k_N} \bigg)}
+	\label{Eq:eddy-viscosity}
+\end{equation}
+Here, $ E_{k_N} $ is the energy at the cutoff frequency $ k_N $, and $ \nu_t^{+\infty} $ is:
+\begin{equation}
+	\nu_t^{+\infty} = 0.31 C_k^{-3/2} \frac{5-m}{m+1} \sqrt{3-m}
+	\label{Eq:nut_plus}
+\end{equation}
+where $ C_k $ is the Kolmogorov constant, that is equal to 0.4523 for 1D Burger's equation. The slope of the energy spectrum is approximately $ m=2 $. The $ \nu_t^* $ is a non-dimensional eddy-viscosity calculated from:
+\begin{equation}
+	\nu_t^*(k/k_N) = 1 + 34.5 e^{-3.03(k_N/k)}
+	\label{Eq:nut_star}
+\end{equation}
+Finally, the effective viscosity for LES is calculated as:
+\begin{equation}
+	\nu_{eff}(k) = \nu + \nu_t(k)
+	\label{Eq:nu_eff}
+\end{equation}
+% %
+\subsection{Energy spectrum}
+% involves the transfer of energy from large scales of motion to the small scales
+% This transfer of energy between different scales requires that the dynamics of the system is nonlinear. 
+In continuum mechanics, it is very useful to analyze the energy spectrum as it represents the transfer of energy from larger scales (low-frequency modes) to smaller scales (high-frequency modes). The energy spectrum $ E_k $ can be mathematically expressed as:
+\begin{equation}
+	E_k = \hat{u}_k \overline{\hat{u}_k}
+	\label{Eq:Burgers_Fourier_Energy}
+\end{equation}
+% %
+\subsection{Numerical method}
+The Burger's equation (Eq. \ref{Eq:Burgers}) is solved in steady-state using the fully-explicit time integration schemes, namely, the Euler, Runge-Kutta 2\textsuperscript{nd}-order, and Runge-Kutta 4\textsuperscript{th}-order methods.
+
+\subsubsection{CFL-condition}
+the following CFL-condition is imposed to reduce the numerical instability of the simulation pertaining to the explicit time integration schemes:
+\begin{equation}
+	\Delta t < C_1 \frac{Re}{N^2}
+	\label{Eq:CFL}
+\end{equation}
+Here, the value of $ C_1 $ are generally kept between 0.1 to 1 in different cases.
+
+\subsubsection{Convergence error}
+The convergence error of a simulation is calculated as:
+\begin{equation}
+	E_{t+1} = \sqrt{\sum_{k} \big(u_{k,t+1} - u_{k,t}\big)^2}
+	\label{Eq:Error}
+\end{equation}
+All the solutions are considered converged when the convergence error dropped below $ 10^{-7} $.
+% %
+\section{Results and discussion}
+\subsection{Analysis of energy spectrum and $ u $-wave}
+\label{sec:gen-results}
+The same steady-state solution of the Burger's equation is obtained by all the fully-explicit time integration schemes. The energy spectrum and $ u $ prediction by the coarse grid with $ N=20 $, the fine grid with $ N=100 $ (DNS), and two LES cases with $ N=20 $ are depicted in Fig. \ref{fig:Ek}.
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Energy spectrum]{
+			\includegraphics[width=1.0\textwidth,center]{Burgers_E_comp_EU_slope2.eps}
+		}
+	\end{minipage}%
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[$ u $]{
+			\includegraphics[width=1.0\textwidth,center]{Burgers_u_comp_0-2pi_EU_1000Points.eps}
+		}
+	\end{minipage}
+	\caption{Steady-state solution of the Burger's equation.}
+	\label{fig:Ek}
+\end{figure}
+
+%It can be observed from Fig. \ref{fig:Ek}(a) that due to insufficient number of Fourier modes ($ N=20 $), the coarse grid is unable to correctly predict the diffusion (or damping energy) compared to the fine grid (DNS, $ N=100 $). The DNS is accurately predicting the diffusion and hence the transport of energy from low-frequency modes (larger scales) to high-frequency modes (smaller scales) is gradual. Therefore, the energy spectrum curve is descending gradually. This phenomena can be interpreted to the lowest oscillation observed in the $ u $-wave predicted by the fine grid in Fig. \ref{fig:Ek}(b). On the contrary, the $ u $-wave by the fine grid has the highest oscillation in regular interval (due to lower diffusion and hence higher energy transport) among all the cases.
+
+It can be observed from Fig. \ref{fig:Ek}(a) that the DNS is accurately predicting the energy spectrum and hence the transport of energy from low-frequency modes (larger scales) to high-frequency modes (smaller scales) is gradual. Therefore, the energy spectrum curve is descending corresponding to the slope of $ m=-2 $. On the other hand, the coarse grid is accurately predicting the energy spectrum until $ N=10 $ only, hence the higher oscillation observed in the $ u $-wave by this case. While the DNS in the fine grid has minimum oscillation in the $ u $-wave.
+
+LES in the coarse grid with the Kolmogorov constant $ C_k = 0.4523 $ is calculating the energy spectrum better than the general case with $ N=20 $  as shown in Fig. \ref{fig:Ek}(a), which leads to a $ u $-wave with slightly lesser oscillation in Fig. \ref{fig:Ek}(b). Further decreasing the Kolmogorov constant to $ C_k = 0.05 $ and therefore increasing the diffusion results to a quicker energy transport (from $ N=8 $ onward) from low-frequency modes (larger scales) to high-frequency modes (smaller scales). Consequently, this leads to a $ u $-wave prediction with lesser oscillation and a result very close to the DNS but also an inaccurate prediction at the sharp corners of $ u $-wave. The sharp corners have the high-frequency modes (smaller scales) and those are not captured due to the higher diffusion by this case.
+
+\subsection{Convergence error}
+The convergence errors of all the cases calculated using Eq. \ref{Eq:Error} are depicted in Fig. \ref{fig:error} and \ref{fig:error2}. Interestingly, cases with higher oscillations in $ u $-wave demonstrated higher simulation-time to converge as shown in Fig. \ref{fig:error}(a) and \ref{fig:error2}(a). The DNS case in fine grid with lowest oscillation converged fastest in terms of simulation-time. It indicates that cases with higher diffusion converge faster. Comparing different cases in terms of number of time-step may not provide any useful information as the time-step sizes are different for different cases.
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Error against simulation-time. Coarse and fine grid.]{
+			\includegraphics[width=1.0\textwidth,center]{fig_case123456_time_comp_1e-7.eps}
+		}
+	\end{minipage}%
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Error against time-step. Coarse and fine grid.]{
+			\includegraphics[width=1.0\textwidth,center]{fig_case123456_time-step_comp_1e-7.eps}
+		}
+	\end{minipage}
+	\caption{Convergence errors of the steady-state solution of the Burger's equation for different fully-explicit time integration schemes. Coarse grid ($ N=20 $) and fine grid (DNS, $ N=100 $).}
+	\label{fig:error}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Error against simulation-time, LES in coarse grid.]{
+			\includegraphics[width=1.0\textwidth,center]{fig_case789101112_time_comp_1e-7.eps}
+		}
+	\end{minipage}%
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Error against time-step, LES in coarse grid.]{
+			\includegraphics[width=1.0\textwidth,center]{fig_case789101112_time-step_comp_1e-7.eps}
+		}
+	\end{minipage}
+	\caption{Convergence errors of the steady-state solution of the Burger's equation for different fully-explicit time integration schemes using LES (Coarse grid, $ N=20 $).}
+	\label{fig:error2}
+\end{figure}
+
+\subsection{CPU-time}
+Different conditions and algorithms in the primary version of the code are optimized to analyze the reduction of CPU times for simulations. The code before and after the optimization are shown in Fig. \ref{fig:CPU-time}.
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.5\textwidth}
+		\subfigure[Unoptimized.]{
+			\includegraphics[width=1.0\textwidth,center]{code_non-optimized.eps}
+		}
+	\end{minipage}%
+	\begin{minipage}[b]{0.5\textwidth}
+		\subfigure[Optimized.]{
+			\includegraphics[width=1.0\textwidth,center]{code_optimized.eps}
+		}
+	\end{minipage}
+	\caption{The code before and after optimization, to reduce the CPU-time of simulations.}
+	\label{fig:CPU-time}
+\end{figure}
+
+The main changes in the code are involving the calculations of terms $ p $, $ q $, and $ \hat{u}_p iq \hat{u}_q $ of Eq. \ref{Eq:Burgers_Fourier}. The first two arrows (depicted in red) in Fig. \ref{fig:CPU-time}(a) calculates $ q $ and set $ k $ as the summation of $ p $ and $ q $. Replacing these with a simple algorithm of $ q=k-p $ results in a significant reduction of calculations by a factor of $ (2N+1) $. The next three arrows are calculating the term $ \hat{u}_p iq \hat{u}_q $ for different $ p $ and $ q $. Here, the conditions for setting positive $ p $ and $ q $ are also simplified by the removal of additional conditions to reduce the CPU-time. Finally, the ways of calculating $\sum_{k} \hat{u}_p iq \hat{u}_q $ are modified to remove additional conditions.
+
+The code optimization resulted in a decrease of CPU-time by a factor of $ N $. The CPU-time for all the cases are reported in Table \ref{Table:CPU-time}. It is noteworthy to point out that the CPU time for the DNS case is reduced by 58 times. The fastest case is the LES with a Kolmogorov constant of $ C_k=0.4523 $, taking only 0.0304 seconds of CPU-time. The other cases also indicate a large reduction of CPU times.
+
+\begin{table}[H]
+	\centering
+	\caption{CPU time (in seconds) of different simulations to obtain the steady-state solution of the Burger's equation. The fastest case is marked in \textcolor{mygreen}{green}, while the decrements are indicated in \textcolor{blue}{blue}.}
+	\label{Table:CPU-time}
+	\begin{tabular}{*5c}
+		\toprule
+		Cases & Optimization & CPU time & Simulation-time & Time-steps \\
+		\midrule
+		\multirow{2}{*}{$ N=20 $} & Non-optimized & 0.4105 $ s $ & \multirow{2}{*}{27.0} & \multirow{2}{*}{900} \\
+		& Optimized & 0.0512 $ s $ \textcolor{blue}{(↓ 8 times)} &  &  \\
+		\midrule
+		\multirow{2}{*}{DNS: $ N=100 $} & Non-optimized & 88.8486 $ s $ & \multirow{2}{*}{5.32} & \multirow{2}{*}{1750} \\
+		& Optimized & 1.5286 $ s $ \textcolor{blue}{(↓ 58 times)} &  &  \\
+		\midrule
+		\multirow{2}{*}{LES: $ N=20, C_k=0.4523 $} & Non-optimized & 0.2084 $ s $ & \multirow{2}{*}{9.717} & \multirow{2}{*}{410} \\
+		& Optimized & \textcolor{mygreen}{0.0304 $ s $} \textcolor{blue}{(↓ 7 times)} &  &  \\
+		\midrule
+		\multirow{2}{*}{LES: $ N=20, C_k=0.05 $} & Non-optimized & 0.4585 $ s $ & \multirow{2}{*}{6.16} & \multirow{2}{*}{1100} \\
+		& Optimized & 0.0908 $ s $ \textcolor{blue}{(↓ 5 times)} &  &  \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Additional cases}
+To understand the role of different terms in the Burger's equation, some additional cases are investigated in this section.
+
+\subsubsection{Different Kolmogorov constants}
+It has been observed in section \ref{sec:gen-results} that correct prediction of energy spectrum plays an important role in predicting the transport of energy from larger scales (low-frequency modes) to smaller scales (high-frequency modes). This allowed the LES cases to achieve a result very close to the DNS using the coarse mesh ($ N=20 $). To understand the role of diffusion even better, two additional LES cases are analyzed. The objectives are, firstly, to find an optimal Kolmogorov constant between the previously attempted values of $ C_k = 0.4523 $ and $ C_k = 0.05 $ in order to better predict the energy spectrum. Secondly, a higher diffusion case to see the changes in the sharp corners of the $ u $-wave.
+
+For the first objective, i.e. to find an optimal Kolmogorov constant, $ C_k = 0.305 $ is used. It can be observed from Fig. \ref{fig:Diff_Kolmogorov}(a) that the Energy spectrum with $ C_k = 0.305 $ is predicting the energy spectrum better than $ C_k = 0.4325 $. Due to this, a decreased oscillation is visible in the $ u $-wave predicted by $ C_k = 0.305 $ in Fig. \ref{fig:Diff_Kolmogorov}(b). However, the improvement is not that much. On the contrary, for a higher diffusion of $ C_k = 0.01 $, the energy transport prediction is accurate only until $ N=4 $ and beyond that the energy transport is too fast. As a result, there is no oscillation at all and the $ u $-wave matches almost exactly to the DNS but at the expense of more inaccurate prediction at the sharp corners. The difference in the energy spectrum among $ C_k = 0.01 $ and DNS in Fig. \ref{fig:Diff_Kolmogorov}(a) (from $ N=4 $ onward) is indicating that the $ C_k = 0.01 $ is not good at predicting high-frequency modes (smaller scales) and hence it is unable to predict the sharp corners of the $ u $-wave as the sharp corners have the high-frequency modes (smaller scales).
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Energy spectrum.]{
+			\includegraphics[width=1.0\textwidth,center]{Burgers_E_comp_EU_LES-EXTRA_slope2.eps}
+		}
+	\end{minipage}%
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[$ u $]{
+			\includegraphics[width=1.0\textwidth,center]{Burgers_u_comp_0-2pi_EU_1000Points_LES-EXTRA.eps}
+		}
+	\end{minipage}
+	\caption{Steady-state solution of the Burger's equation using two additional LES cases.}
+	\label{fig:Diff_Kolmogorov}
+\end{figure}
+
+\subsubsection{Different initial condition}
+A different initial condition of $ \hat{u}_k=k^{-1}i $, which is a complex number, is applied to analyze the changes it incorporates to the result. The previous initial condition was a real number, $ \hat{u}_k=k^{-1} $. Fig \ref{fig:Diff_IC}(a) and \ref{fig:Diff_IC}(b) shows the results with previous and new initial conditions, respectively. Interestingly, the $ u $-wave prediction by different cases using the new initial condition did not change except that the wave gets truncated at a different location. The solutions are identical.
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Initial condition is a real number: $ \hat{u}_k=k^{-1} $.]{
+			\includegraphics[width=1.0\textwidth,center]{Burgers_u_comp_0-2pi_EU_1000Points.eps}
+		}
+	\end{minipage}%
+	\begin{minipage}[b]{0.52\textwidth}
+		\subfigure[Initial condition is a complex number: $ \hat{u}_k=k^{-1}i $.]{
+			\includegraphics[width=1.0\textwidth,center]{Burgers_u_comp_0-2pi_EU_1000Points_IMAG.eps}
+		}
+	\end{minipage}
+	\caption{Steady-state solution of the Burger's equation using different initial condition.}
+	\label{fig:Diff_IC}
+\end{figure}
+
+%\newpage
+%\appendix
+%\section{Appendix will be here}
+%\label{App:AppendixA}
+%	\lstinputlisting[style=Matlab-editor]{k3_Group27.m}
+
+\end{document}
