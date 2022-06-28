@@ -2,9 +2,9 @@ program Burgers_v74
 implicit none
 ! This program solves the Burgers equation using Fourier analysis
 ! and explicit Runge-Kutta 4th order method
+!            -------
 ! written by Tariq Ridwan: https://tariqridwan.github.io/
 ! Barcelona Supercomputing Center // Universitat Politècnica de Catalunya
-! Burgers version 5.O: steady-state calculation_Optimized
 !            -------
 ! Type declarations of different properties
     integer(4), parameter :: N = 20, tmax = 1720 ! N=20 case
