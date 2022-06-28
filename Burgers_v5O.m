@@ -1,7 +1,7 @@
 % This program solves the Burgers equation using Fourier analysis
 % and Euler explicit method
 %            -------
-% written by Tariq Ridwan: tariq.ridwan@bsc.es
+% written by Tariq Ridwan: https://tariqridwan.github.io/
 % Barcelona Supercomputing Center // Universitat Politècnica de Catalunya
 %% Burgers version 5.O: steady-state calculation_Optimized
 close all

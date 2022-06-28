@@ -2,7 +2,7 @@
 % and explicit Runge-Kutta 2nd order method
 % with Large Eddy Simulation (LES) technique
 %            -------
-% written by Tariq Ridwan: tariq.ridwan@bsc.es
+% written by Tariq Ridwan: https://tariqridwan.github.io/
 % Barcelona Supercomputing Center // Universitat Politècnica de Catalunya
 %% Burgers version 7: RK2 steady-state calculation
 close all

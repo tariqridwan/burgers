@@ -1,7 +1,7 @@
 % This program solves the Burgers equation using Fourier analysis
 % and explicit Runge-Kutta 4th order method
 %            -------
-% written by Tariq Ridwan: tariq.ridwan@bsc.es
+% written by Tariq Ridwan: https://tariqridwan.github.io/
 % Barcelona Supercomputing Center // Universitat Politècnica de Catalunya
 %% Burgers version 7-4: RK4 steady-state calculation
 close all
