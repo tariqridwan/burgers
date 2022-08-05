@@ -5,6 +5,7 @@ implicit none
 !            -------
 ! written by Tariq Ridwan: https://tariqridwan.github.io/
 ! Barcelona Supercomputing Center // Universitat Politècnica de Catalunya
+! Burgers version 5.O: steady-state calculation_Optimized
 !            -------
 ! Type declarations of different properties
     integer(4), parameter :: N = 20, tmax = 900 ! N=20 case
@@ -34,13 +35,13 @@ implicit none
         imaginary_part = 0.0
         uk(k) = cmplx(real_part, imaginary_part, 8) ! FLAGGGGGG :::: ????
         ! uk(k) = (real_part, imaginary_part)
-        Print *, "INITIAL uk : ", uk(k)
+        Print *, "INITIAL uk : ", k, uk(k)
     end do
 
 ! %% solving uk for different modes
     ut(1) = uk(1)  ! % ut(1) = uk(1) as u(1) is constant
     do k = 1,N
-        print *, "INITIAL ut :  ", ut(k)
+        print *, "INITIAL ut :  ", k, ut(k)
     end do
 
     call cpu_time(start) ! start calculating CPU-time
@@ -78,13 +79,13 @@ implicit none
     ! end do
 
     do k = 1,N
-        Print *, "FINAL ut : ", ut(k) ! print all ut
+        Print *, "FINAL ut : ", k, ut(k) ! print all ut
     end do
 
 ! %% solving Ek for different modes
     do k = 1,N
         E(k) = ut(k)*conjg(ut(k))
-        print *, "E : ", E(k) ! print all E
+        print *, "E : ", k, E(k) ! print all E
     end do
 
 end program Burgers_v5O

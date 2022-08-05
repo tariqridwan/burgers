@@ -8,8 +8,8 @@ implicit none
 ! Barcelona Supercomputing Center // Universitat Politècnica de Catalunya
 !            -------
 ! Type declarations of different properties
-    ! integer(4), parameter :: N = 20, tmax = 410 ! N=20 LES 4523
-    integer(4), parameter :: N = 20, tmax = 1100 ! N=20 LES 05
+    integer(4), parameter :: N = 20, tmax = 410 ! N=20 LES 4523
+    ! integer(4), parameter :: N = 20, tmax = 1100 ! N=20 LES 05
     integer(4) :: Re, k, p, q, t, m
     real(8) :: c1, dt, total_time, real_part, imaginary_part, C_k, vt_star(N), E(N), nu_t(N), nu_eff(N), x, nut_inf, start, finish
     complex(8) :: onei, up_iq_uq, uk(N), ut(N), err(tmax), sum_error(tmax)
@@ -21,10 +21,10 @@ implicit none
 ! Give values to different parameters
     ! %% Physical description
     Re = 40 ! Reynolds number
-    ! C_k = 0.4523
-    ! c1 = 0.237 ! courant coeff ! N=20 LES 4523
-    C_k = 0.05
-    c1 = 0.056 ! courant coeff ! N=20 LES 05
+    C_k = 0.4523
+    c1 = 0.237 ! courant coeff ! N=20 LES 4523
+    ! C_k = 0.05
+    ! c1 = 0.056 ! courant coeff ! N=20 LES 05
     dt = c1 * Re / N ** 2.0
     total_time = dt*tmax
     k = N
@@ -42,13 +42,13 @@ implicit none
         imaginary_part = 0.0
         uk(k) = cmplx(real_part, imaginary_part, 8) ! FLAGGGGGG :::: ????
         ! uk(k) = (real_part, imaginary_part)
-        Print *, "INITIAL uk : ", uk(k)
+        Print *, "INITIAL uk : ", k, uk(k)
     end do
 
 ! %% solving uk for different modes
     ut(1) = uk(1)  ! % ut(1) = uk(1) as u(1) is constant
     do k = 1,N
-        print *, "INITIAL ut :  ", ut(k)
+        print *, "INITIAL ut :  ", k, ut(k)
     end do
 
     call cpu_time(start) ! start calculating CPU-time
@@ -92,13 +92,13 @@ implicit none
     ! end do
 
     do k = 1,N
-        Print *, "FINAL ut : ", ut(k) ! print all ut
+        Print *, "FINAL ut : ", k, ut(k) ! print all ut
     end do
 
 ! %% solving Ek for different modes
     do k = 1,N
         E(k) = ut(k)*conjg(ut(k))
-        print *, "E : ", E(k) ! print all E
+        print *, "E : ", k, E(k) ! print all E
     end do
 
 end program Burgers_v6O
